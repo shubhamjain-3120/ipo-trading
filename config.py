@@ -8,7 +8,10 @@ TARGET_PROFIT_PERCENT = float(os.environ.get('TARGET_PROFIT_PERCENT', 4))  # Tar
 # Zerodha Kite API credentials
 KITE_API_KEY = os.environ.get('KITE_API_KEY', '')
 KITE_API_SECRET = os.environ.get('KITE_API_SECRET', '')
-KITE_ACCESS_TOKEN = os.environ.get('KITE_ACCESS_TOKEN', '')  # Get this from manual login
+KITE_ACCESS_TOKEN = os.environ.get('KITE_ACCESS_TOKEN', '')  # Fallback manual token
+KITE_USER_ID = os.environ.get('KITE_USER_ID', '')
+KITE_PASSWORD = os.environ.get('KITE_PASSWORD', '')
+KITE_TOTP_KEY = os.environ.get('KITE_TOTP_KEY', '')  # TOTP secret for automation
 
 # Database path
 DB_PATH = os.environ.get('DB_PATH', 'data/ipo.db')

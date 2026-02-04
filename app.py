@@ -105,6 +105,19 @@ def token_status():
     else:
         return {'status': 'expired', 'has_token': False}
 
+@app.route('/auto-refresh-token')
+def auto_refresh_token():
+    """Manually trigger auto token refresh"""
+    try:
+        import kite_auto_login
+        token = kite_auto_login.auto_login_kite()
+        if token:
+            return redirect(url_for('dashboard'))
+        else:
+            return "Auto-refresh failed. Check credentials.", 500
+    except Exception as e:
+        return f"Error: {e}", 500
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5001))

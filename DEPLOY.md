@@ -56,7 +56,14 @@ STOP_LOSS_PERCENT=1.5
 TARGET_PROFIT_PERCENT=4
 ```
 
-**Note:** No need to manually set access token - the app handles it automatically!
+**For FULL automation (zero-touch), also add:**
+```
+KITE_USER_ID=your_zerodha_user_id
+KITE_PASSWORD=your_zerodha_password
+KITE_TOTP_KEY=your_totp_secret_base32
+```
+
+See `AUTOMATION.md` for details on getting TOTP secret and security considerations.
 
 ## Step 5: Set Up Kite OAuth
 
