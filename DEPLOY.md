@@ -51,31 +51,30 @@ In Railway dashboard → Variables, add:
 ```
 KITE_API_KEY=your_api_key_here
 KITE_API_SECRET=your_api_secret_here
-KITE_ACCESS_TOKEN=your_access_token_here
 INVESTMENT_AMOUNT=5000
 STOP_LOSS_PERCENT=1.5
 TARGET_PROFIT_PERCENT=4
-PORT=5000
 ```
 
-**Important:** Don't set access token yet - wait until you can access the deployed URL first.
+**Note:** No need to manually set access token - the app handles it automatically!
 
-## Step 5: Generate Access Token
+## Step 5: Set Up Kite OAuth
 
 After deployment, Railway will give you a URL like `https://your-app.railway.app`
 
-1. Update your Kite Connect app redirect URL to: `https://your-app.railway.app`
+1. Update your Kite Connect app redirect URL to: `https://your-app.railway.app/kite-callback`
 
-2. Generate access token:
-   - Visit: `https://kite.zerodha.com/connect/login?v=3&api_key=YOUR_API_KEY`
-   - Login with Zerodha credentials
-   - Copy `request_token` from redirected URL
-   - Run locally: `python generate_token.py`
-   - Copy the generated access token
+2. Visit your Railway app URL and click **"Refresh Kite Token"**
 
-3. Add access token to Railway environment variables
+3. Login with your Zerodha credentials (password + TOTP)
 
-4. Redeploy (Railway will auto-redeploy when you change env vars)
+4. You'll be redirected back and the token will be stored in the database
+
+**Token Auto-Management:**
+- Token is stored in the database (valid for 24 hours)
+- Dashboard shows token status (valid/expired)
+- When expired, just click "Refresh Kite Token" again
+- No manual token generation needed!
 
 ## Step 6: Set Up Cron Job
 
@@ -98,18 +97,14 @@ Or use an external cron service like:
 
 ## Daily Access Token Refresh
 
-Access tokens expire daily. You have two options:
+Access tokens expire after 24 hours. When it expires:
 
-**Option 1: Manual (Simple)**
-- Each morning, regenerate token using `generate_token.py`
-- Update Railway env var `KITE_ACCESS_TOKEN`
+1. Dashboard shows: "⚠ Kite token expired"
+2. Click **"Refresh Kite Token"** button
+3. Login with Zerodha credentials
+4. Done! Token stored for next 24 hours
 
-**Option 2: Automated (Future)**
-- Build a `/kite-callback` route to handle OAuth flow
-- Store tokens in database
-- Auto-refresh before trading
-
-For now, Option 1 is fine for a POC.
+**No manual token generation needed!** The app handles OAuth flow automatically.
 
 ## Troubleshooting
 

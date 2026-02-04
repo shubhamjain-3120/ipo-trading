@@ -7,7 +7,7 @@ import db
 kite = None
 
 def init_kite():
-    """Initialize Kite Connect with access token from env var"""
+    """Initialize Kite Connect with access token from database or env var"""
     global kite
 
     if not config.KITE_API_KEY:
@@ -16,12 +16,18 @@ def init_kite():
 
     kite = KiteConnect(api_key=config.KITE_API_KEY)
 
-    # Set access token if provided
-    if config.KITE_ACCESS_TOKEN:
-        kite.set_access_token(config.KITE_ACCESS_TOKEN)
+    # Try to get token from database first
+    access_token = db.get_access_token()
+
+    # Fallback to env var if no DB token
+    if not access_token and config.KITE_ACCESS_TOKEN:
+        access_token = config.KITE_ACCESS_TOKEN
+
+    if access_token:
+        kite.set_access_token(access_token)
         print("Kite Connect initialized with access token")
     else:
-        print("Kite Connect initialized (no access token - set KITE_ACCESS_TOKEN env var)")
+        print("Kite Connect initialized (no access token - login required)")
 
     return kite
 

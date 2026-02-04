@@ -12,19 +12,9 @@ Automated IPO trading tool that:
 
 1. Create a developer account at https://developers.kite.trade/
 2. Create a new app to get your API key and secret
-3. Generate access token (valid for 1 day):
+3. Set redirect URL to: `http://localhost:5001/kite-callback` (for local testing)
 
-```bash
-# Run the token generator
-python generate_token.py
-
-# Follow the prompts:
-# 1. Visit the login URL with your API key
-# 2. Login with Zerodha credentials
-# 3. Copy request_token from redirected URL
-# 4. Enter API key, secret, and request token
-# 5. Copy the generated access token
-```
+That's it! Token generation is handled automatically through the web interface.
 
 ### 2. Local Testing
 
@@ -51,13 +41,16 @@ python app.py
 ```
 KITE_API_KEY=your_api_key
 KITE_API_SECRET=your_api_secret
-KITE_ACCESS_TOKEN=your_access_token
 INVESTMENT_AMOUNT=5000
 STOP_LOSS_PERCENT=1.5
 TARGET_PROFIT_PERCENT=4
 ```
 
-3. Set up cron job to hit `/cron` endpoint at 9 AM IST:
+3. Update Kite app redirect URL to: `https://your-app.railway.app/kite-callback`
+
+4. Visit your app and click "Refresh Kite Token" to login
+
+5. Set up cron job to hit `/cron` endpoint at 9 AM IST:
    - Cron expression: `30 3 * * *` (3:30 AM UTC = 9:00 AM IST)
 
 ## How It Works
@@ -89,7 +82,8 @@ Edit these in Railway env vars or `config.py`:
 
 ## Important Notes
 
-- **Access token expires daily** - You'll need to regenerate it each day for automated trading
+- **Access token expires daily** - Dashboard shows status, just click "Refresh Kite Token" when expired
+- **Automatic token management** - No manual token generation needed, handled through OAuth
 - **Paper trading first** - Test with small amounts before going live
 - **Market hours** - Orders only execute during NSE trading hours (9:15 AM - 3:30 PM)
 - **NSE API** - Using official NSE API, more reliable than scraping HTML

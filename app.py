@@ -1,11 +1,13 @@
-from flask import Flask, render_template, redirect, url_for
-from datetime import date
+from flask import Flask, render_template, redirect, url_for, request, flash
+from datetime import date, datetime, timedelta
+from kiteconnect import KiteConnect
 import config
 import db
 import scraper
 import scheduler
 
 app = Flask(__name__)
+app.secret_key = config.KITE_API_SECRET or 'dev-secret-key'
 
 @app.route('/')
 def dashboard():
@@ -59,6 +61,49 @@ def cron_trigger():
     """Endpoint for Railway cron to hit"""
     scheduler.run_daily_job()
     return {'status': 'completed'}
+
+@app.route('/login-kite')
+def login_kite():
+    """Redirect to Kite login"""
+    if not config.KITE_API_KEY:
+        return "Kite API key not configured", 500
+
+    kite = KiteConnect(api_key=config.KITE_API_KEY)
+    login_url = kite.login_url()
+    return redirect(login_url)
+
+@app.route('/kite-callback')
+def kite_callback():
+    """Handle Kite OAuth callback"""
+    request_token = request.args.get('request_token')
+
+    if not request_token:
+        return "No request token received", 400
+
+    if not config.KITE_API_KEY or not config.KITE_API_SECRET:
+        return "Kite credentials not configured", 500
+
+    try:
+        kite = KiteConnect(api_key=config.KITE_API_KEY)
+        data = kite.generate_session(request_token, api_secret=config.KITE_API_SECRET)
+        access_token = data['access_token']
+
+        # Store token in database (expires in 24 hours)
+        expires_at = (datetime.now() + timedelta(hours=24)).isoformat()
+        db.save_access_token(access_token, expires_at)
+
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        return f"Error generating access token: {e}", 500
+
+@app.route('/token-status')
+def token_status():
+    """Check if we have a valid token"""
+    token = db.get_access_token()
+    if token:
+        return {'status': 'valid', 'has_token': True}
+    else:
+        return {'status': 'expired', 'has_token': False}
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

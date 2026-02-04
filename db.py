@@ -55,6 +55,13 @@ def init_db():
             details TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS kite_tokens (
+            id INTEGER PRIMARY KEY,
+            access_token TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            expires_at TIMESTAMP NOT NULL
+        );
     ''')
     conn.commit()
     conn.close()
@@ -222,6 +229,33 @@ def get_logs_by_date(date_str):
     ''', (date_str,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+# Token management
+def save_access_token(access_token, expires_at):
+    """Save Kite access token"""
+    conn = get_db()
+    # Delete old tokens
+    conn.execute('DELETE FROM kite_tokens')
+    # Insert new token
+    conn.execute('''
+        INSERT INTO kite_tokens (access_token, expires_at)
+        VALUES (?, ?)
+    ''', (access_token, expires_at))
+    conn.commit()
+    conn.close()
+
+def get_access_token():
+    """Get current access token if valid"""
+    from datetime import datetime
+    conn = get_db()
+    row = conn.execute('''
+        SELECT access_token, expires_at FROM kite_tokens
+        WHERE expires_at > ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    ''', (datetime.now().isoformat(),)).fetchone()
+    conn.close()
+    return dict(row)['access_token'] if row else None
 
 # Initialize on import
 init_db()
