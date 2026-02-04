@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ date }} - IPO Trading</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: #1a1a2e;
+            font-size: 2em;
+        }
+
+        .back-link {
+            color: #0f4c75;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #16213e;
+            font-size: 1.2em;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #444;
+        }
+
+        tr:hover { background: #f8f9fa; }
+
+        .status-BUY { color: #28a745; font-weight: bold; }
+        .status-SKIP { color: #dc3545; }
+        .status-EXECUTED { color: #28a745; font-weight: bold; }
+        .status-PENDING { color: #ffc107; }
+        .status-FAILED { color: #dc3545; }
+        .status-SUCCESS { color: #28a745; }
+
+        .empty {
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .config {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .config strong { color: #0f4c75; }
+
+        .log-item {
+            padding: 10px;
+            border-left: 3px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .log-SUCCESS { border-left-color: #28a745; }
+        .log-FAILED { border-left-color: #dc3545; }
+
+        .log-time {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .log-type {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ date }}</h1>
+            <a href="/" class="back-link">← Back to all dates</a>
+        </div>
+
+        <div class="config">
+            <strong>Configuration:</strong>
+            Investment: ₹{{ config.investment }} |
+            Stop Loss: {{ config.stop_loss }}% |
+            Target: {{ config.target }}%
+        </div>
+
+        <div class="section">
+            <h2>IPOs</h2>
+            {% if ipos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Open</th>
+                        <th>Close</th>
+                        <th>Listing</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ipo in ipos %}
+                    <tr>
+                        <td>{{ ipo.company }}</td>
+                        <td>{{ ipo.open_date or '-' }}</td>
+                        <td>{{ ipo.close_date or '-' }}</td>
+                        <td>{{ ipo.listing_date or '-' }}</td>
+                        <td>{{ '₹' + ipo.issue_price|string if ipo.issue_price else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty">No IPOs for this date</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Decisions</h2>
+            {% if decisions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Decision</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Entry</th>
+                        <th>SL</th>
+                        <th>Target</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in decisions %}
+                    <tr>
+                        <td>{{ d.company }}</td>
+                        <td class="status-{{ d.decision_type }}">{{ d.decision_type }}</td>
+                        <td style="font-size:0.85em">{{ d.reason[:80] }}{% if d.reason|length > 80 %}...{% endif %}</td>
+                        <td class="status-{{ d.status }}">{{ d.status }}</td>
+                        <td>{{ '₹' + d.entry_price|string if d.entry_price else '-' }}</td>
+                        <td>{{ '₹' + d.stop_loss_price|string if d.stop_loss_price else '-' }}</td>
+                        <td>{{ '₹' + d.target_price|string if d.target_price else '-' }}</td>
+                        <td>{{ d.quantity or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty">No decisions made on this date</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Run Logs</h2>
+            {% if logs %}
+            {% for log in logs %}
+            <div class="log-item log-{{ log.status }}">
+                <div>
+                    <span class="log-type">{{ log.run_type }}</span>
+                    <span class="status-{{ log.status }}">{{ log.status }}</span>
+                </div>
+                <div style="margin-top:5px">{{ log.details }}</div>
+                <div class="log-time">{{ log.created_at }}</div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="empty">No logs for this date</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

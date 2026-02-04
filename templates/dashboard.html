@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPO Trading Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #1a1a2e;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .actions {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #0f4c75;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .btn:hover { background: #1b262c; }
+        .btn-secondary { background: #6c757d; }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #444;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover { background: #f8f9fa; }
+
+        a.date-link {
+            color: #0f4c75;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+        a.date-link:hover {
+            text-decoration: underline;
+        }
+
+        .today {
+            background: #e8f5e9;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .empty-action {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IPO Trading Dashboard</h1>
+        <p class="subtitle">Click on any date to view details</p>
+
+        <div class="actions">
+            <a href="/run" class="btn" onclick="return confirm('Run daily job now?')">Run Daily Job</a>
+            <a href="/scrape" class="btn btn-secondary">Scrape Only</a>
+        </div>
+
+        <div class="card">
+            {% if dates %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date in dates %}
+                    <tr class="{% if date == today %}today{% endif %}">
+                        <td>
+                            <a href="/date/{{ date }}" class="date-link">
+                                {{ date }}
+                                {% if date == today %}(Today){% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">
+                <p>No activity yet</p>
+                <div class="empty-action">
+                    <a href="/scrape" class="btn">Run Scraper to Get Started</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
